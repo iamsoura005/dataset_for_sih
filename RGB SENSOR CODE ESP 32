@@ -1,0 +1,57 @@
+#include <Wire.h>
+#include "Adafruit_TCS34725.h"
+
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+
+// ESP32 DevKit V1 I2C pins
+#define I2C_SDA 21
+#define I2C_SCL 22
+
+void setup() {
+  Serial.begin(115200);
+
+  // Initialize I2C
+  Wire.begin(I2C_SDA, I2C_SCL);
+  delay(1000);  // REMOVED THE STRAY 'D' CHARACTER
+
+  Serial.println("ESP32 TCS34725 Color Sensor Test");
+  Serial.println("Setup complete, initializing sensor...");
+
+  if (tcs.begin()) {
+    Serial.println("Found TCS34725 sensor");
+    Serial.println("R - Red, G - Green, B - Blue, C - Clear, Lux - Light Intensity");
+    Serial.println("==========================================");
+  } else {
+    Serial.println("No TCS34725 found! Check wiring:");
+    Serial.println("- 3V3  → ESP32 3.3V");
+    Serial.println("- GND  → ESP32 GND");
+    Serial.println("- SDA  → GPIO 21");
+    Serial.println("- SCL  → GPIO 22");
+    while (1) delay(1000);
+  }
+}
+
+void loop() {
+  uint16_t r, g, b, c, colorTemp, lux;
+
+  tcs.getRawData(&r, &g, &b, &c);
+  colorTemp = tcs.calculateColorTemperature(r, g, b);
+  lux = tcs.calculateLux(r, g, b);
+
+  Serial.print("R:");
+  Serial.print(r);
+  Serial.print(" G:");
+  Serial.print(g);
+  Serial.print(" B:");
+  Serial.print(b);
+  Serial.print(" C:");
+  Serial.print(c);
+  Serial.print(" Lux:");
+  Serial.print(lux);
+  Serial.print(" Temp:");
+  Serial.print(colorTemp);
+  Serial.print("K");
+  Serial.println();
+
+  delay(500);
+}
